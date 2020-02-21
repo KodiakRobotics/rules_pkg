@@ -75,23 +75,26 @@ def _pkg_tar_impl(ctx):
     # Add runfiles if requested
     file_inputs = []
     if ctx.attr.include_runfiles:
+        workspace_name = (ctx.workspace_name if ctx.workspace_name else "__main__" )
         runfiles_depsets = []
+
         for f in ctx.attr.srcs:
+
             default_runfiles = f[DefaultInfo].default_runfiles
             if default_runfiles == None:
                 continue
             elif ctx.attr.runfile_tree:
-
                 for runfile in default_runfiles.files.to_list():
                     runfile_tree_path = "{}/{}.runfiles".format(
                         f.label.package,
                         f.label.name)
 
+                    workspace_name = (ctx.workspace_name if ctx.workspace_name else "__main__" )
                     # Make sure to not include the generated executable in the runfiles
                     if f.files_to_run.executable.short_path != runfile.short_path:
-                        remap_paths[runfile.short_path] = runfile_tree_path + "/__main__/" + runfile.short_path
+                        remap_paths[runfile.short_path] = runfile_tree_path + "/" + workspace_name + "/" + runfile.short_path
 
-                    if runfile in ctx.attr.python_runtime.files.to_list():
+                    if ctx.attr.python_runtime and runfile in ctx.attr.python_runtime.files.to_list():
                         full_runfile_interpreter_path = "{}/{}".format(ctx.attr.package_dir, remap_paths[runfile.path])
                         symlinks[full_runfile_interpreter_path] = ctx.attr.python_deployed_runtime_path
             runfiles_depsets.append(default_runfiles.files)
