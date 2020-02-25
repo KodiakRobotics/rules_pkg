@@ -79,7 +79,7 @@ def _pkg_tar_impl(ctx):
             default_runfiles = f[DefaultInfo].default_runfiles
             if default_runfiles == None:
                 continue
-            elif ctx.attr.runfile_tree:
+            elif ctx.attr.include_runfile_tree:
                 for runfile in default_runfiles.files.to_list():
                     runfile_tree_path = "{}/{}.runfiles".format(
                         f.label.package,
@@ -316,6 +316,8 @@ pkg_tar_impl = rule(
 
         # custom atrributes
         "include_runfile_tree": attr.bool(default = False),
+        "venv": attr.label(allow_files = True),
+
 
         # Outputs
         "out": attr.output(),
