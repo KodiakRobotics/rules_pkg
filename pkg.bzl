@@ -338,9 +338,7 @@ pkg_tar_impl = rule(
         # Custom atrributes
         "include_runfile_tree": attr.bool(default = False),
         "py_venv": attr.label(allow_files = True),
-        "py_venv_deploy_path": attr.string(
-            default = "/opt/kodiak/venv/bin/python"
-        ),
+        "py_venv_deploy_path": attr.string(),
 
         # Outputs
         "out": attr.output(),
