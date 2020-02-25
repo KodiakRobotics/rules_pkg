@@ -95,7 +95,7 @@ def _pkg_tar_impl(ctx):
                     if f.files_to_run.executable.short_path != runfile.short_path:
                         remap_paths[runfile.short_path] = runfile_tree_path + "/" + workspace_name + "/" + runfile.short_path
 
-                    print(ctx.attr.python_runtime, runfile in ctx.attr.python_runtime.files.to_list())
+                    print(ctx.attr.python_runtime.files.to_list(), runfile in ctx.attr.python_runtime.files.to_list())
 
                     if ctx.attr.python_runtime and runfile in ctx.attr.python_runtime.files.to_list():
                         full_runfile_interpreter_path = "{}/{}".format(ctx.attr.package_dir, remap_paths[runfile.path])
