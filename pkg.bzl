@@ -89,7 +89,8 @@ def _pkg_tar_impl(ctx):
                     runfile_tree_root,
                     venv_runfile_python_path
                 )
-                symlinks[full_runfile_interpreter_path] = ctx.attr.py_venv_deploy_path
+                symlinks[full_runfile_interpreter_path] = "{}/bin/python".format(
+                    ctx.attr.py_venv_deploy_path)
 
         if not has_correct_environment:
             fail("If you specify the py_venv parameter, this python target" +
@@ -338,7 +339,7 @@ pkg_tar_impl = rule(
         # Custom atrributes
         "include_runfile_tree": attr.bool(default = False),
         "py_venv": attr.label(allow_files = True),
-        "py_venv_deploy_path": attr.string(),
+        "py_venv_deploy_path": attr.string(default=""),
 
         # Outputs
         "out": attr.output(),
