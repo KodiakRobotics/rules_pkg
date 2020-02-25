@@ -69,12 +69,38 @@ def _pkg_tar_impl(ctx):
     if ctx.attr.portable_mtime:
         args.append("--mtime=portable")
 
-    # Add runfiles if requested
-    file_inputs = []
-    if ctx.attr.include_runfiles:
-        workspace_name = (ctx.workspace_name if ctx.workspace_name else "__main__" )
-        runfiles_depsets = []
+    if ctx.attr.py_venv and not ctx.attr.include_runfiles:
+        fail("If pkg_tar py_venv is provided include_runfiles must be True")
 
+    venv_workspace_name = None
+    venv_runfile_python_path = None
+    if ctx.attr.py_venv:
+        venv_workspace_name = ctx.attr.py_venv.label.workspace_name
+        venv_runfile_python_path = "external/{}/{}/bin/python".format(venv_workspace_name, venv_workspace_name)
+        has_correct_environment = False
+        for f in ctx.attr.srcs:
+            default_runfiles = f[DefaultInfo].default_runfiles
+            runfile_tree_root = "{}/{}.runfiles".format(f.label.package, f.label.name)
+
+            if venv_runfile_python_path in [x.path for x in default_runfiles.files.to_list()]:
+                has_correct_environment = True
+                full_runfile_interpreter_path = "{}/{}/{}".format(
+                    ctx.attr.package_dir,
+                    runfile_tree_root,
+                    venv_runfile_python_path
+                )
+                symlinks[full_runfile_interpreter_path] = ctx.attr.py_venv_deploy_path
+
+        if not has_correct_environment:
+            fail("If you specify the py_venv parameter, this python target" +
+                " must be built with the correct config from .bazelrc. This doesn't seem" +
+                " to be the case because {} is not in any srcs' runfiles".format(venv_runfile_python_path))
+
+    file_inputs = []
+    # Add runfiles if requested
+    workspace_name = (ctx.workspace_name if ctx.workspace_name else "__main__" )
+    runfiles_depsets = []
+    if ctx.attr.include_runfiles:
         for f in ctx.attr.srcs:
             default_runfiles = f[DefaultInfo].default_runfiles
             if default_runfiles == None:
@@ -85,15 +111,10 @@ def _pkg_tar_impl(ctx):
                         f.label.package,
                         f.label.name)
 
-                    workspace_name = (ctx.workspace_name if ctx.workspace_name else "__main__" )
                     # Make sure to not include the generated executable in the runfiles
                     if f.files_to_run.executable.short_path != runfile.short_path:
                         remap_paths[runfile.short_path] = runfile_tree_path + "/" + workspace_name + "/" + runfile.short_path
 
-                    # if ctx.attr.python_runtime and runfile in ctx.attr.python_runtime.files.to_list():
-                    #     full_runfile_interpreter_path = "{}/{}".format(ctx.attr.package_dir, remap_paths[runfile.path])
-                    #     print("adding a symlink from {} to {}".format(full_runfile_interpreter_path, ctx.attr.python_deployed_runtime_path))
-                    #     symlinks[full_runfile_interpreter_path] = ctx.attr.python_deployed_runtime_path
             runfiles_depsets.append(default_runfiles.files)
         # deduplicates files in srcs attribute and their runfiles
         file_inputs = depset(ctx.files.srcs, transitive = runfiles_depsets).to_list()
@@ -314,10 +335,12 @@ pkg_tar_impl = rule(
         "empty_dirs": attr.string_list(),
         "remap_paths": attr.string_dict(),
 
-        # custom atrributes
+        # Custom atrributes
         "include_runfile_tree": attr.bool(default = False),
-        "venv": attr.label(allow_files = True),
-
+        "py_venv": attr.label(allow_files = True),
+        "py_venv_deploy_path": attr.string(
+            default = "/opt/kodiak/venv/bin/python"
+        ),
 
         # Outputs
         "out": attr.output(),
