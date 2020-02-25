@@ -96,6 +96,7 @@ def _pkg_tar_impl(ctx):
 
                     if ctx.attr.python_runtime and runfile in ctx.attr.python_runtime.files.to_list():
                         full_runfile_interpreter_path = "{}/{}".format(ctx.attr.package_dir, remap_paths[runfile.path])
+                        print("adding a symlink from {} to {}".format(full_runfile_interpreter_path, ctx.attr.python_deployed_runtime_path))
                         symlinks[full_runfile_interpreter_path] = ctx.attr.python_deployed_runtime_path
             runfiles_depsets.append(default_runfiles.files)
         # deduplicates files in srcs attribute and their runfiles
