@@ -74,15 +74,17 @@ def _pkg_tar_impl(ctx):
 
     venv_workspace_name = None
     venv_runfile_python_path = None
+    external_venv_runfile_python_path = None
     if ctx.attr.py_venv:
         venv_workspace_name = ctx.attr.py_venv.label.workspace_name
-        venv_runfile_python_path = "external/{}/{}/bin/python".format(venv_workspace_name, venv_workspace_name)
+        venv_runfile_python_path = "{}/{}/bin/python".format(venv_workspace_name, venv_workspace_name)
+        external_venv_runfile_python_path = "external/{}".format(venv_runfile_python_path)
         has_correct_environment = False
         for f in ctx.attr.srcs:
             default_runfiles = f[DefaultInfo].default_runfiles
             runfile_tree_root = "{}/{}.runfiles".format(f.label.package, f.label.name)
 
-            if venv_runfile_python_path in [x.path for x in default_runfiles.files.to_list()]:
+            if external_venv_runfile_python_path in [x.path for x in default_runfiles.files.to_list()]:
                 has_correct_environment = True
                 full_runfile_interpreter_path = "{}/{}/{}".format(
                     ctx.attr.package_dir,
