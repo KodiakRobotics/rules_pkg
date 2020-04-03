@@ -84,6 +84,7 @@ def _pkg_tar_impl(ctx):
             default_runfiles = f[DefaultInfo].default_runfiles
             runfile_tree_root = "{}/{}.runfiles".format(f.label.package, f.label.name)
 
+
             if external_venv_runfile_python_path in [x.path for x in default_runfiles.files.to_list()]:
                 has_correct_environment = True
                 full_runfile_interpreter_path = "{}/{}/{}".format(
@@ -114,6 +115,15 @@ def _pkg_tar_impl(ctx):
                     runfile_tree_path = "{}/{}.runfiles".format(
                         f.label.package,
                         f.label.name)
+
+                    strip_prefix = ctx.attr.strip_prefix
+                    if strip_prefix != None and strip_prefix != "":
+                        lsp = len(strip_prefix)
+                        print(strip_prefix, runfile_tree_path)
+                        if strip_prefix[0] == "/" and strip_prefix[1:] == runfile_tree_path[:lsp-1]:
+                            runfile_tree_path = runfile_tree_path[lsp-1:]
+                        if strip_prefix == runfile_tree_path[0:lsp]:
+                            runfile_tree_path = runfile_tree_path[lsp:]
 
                     # Make sure to not include the generated executable in the runfiles
                     if f.files_to_run.executable.short_path != runfile.short_path:
