@@ -38,7 +38,6 @@ def _pkg_tar_impl(ctx):
 
     # Compute the relative path
     data_path = compute_data_path(ctx.outputs.out, ctx.attr.strip_prefix)
-    print(data_path)
     # Find a list of path remappings to apply.
     remap_paths = dict(ctx.attr.remap_paths)
 
@@ -119,7 +118,6 @@ def _pkg_tar_impl(ctx):
                     strip_prefix = ctx.attr.strip_prefix
                     if strip_prefix != None and strip_prefix != "":
                         lsp = len(strip_prefix)
-                        print(strip_prefix, runfile_tree_path)
                         if strip_prefix[0] == "/" and strip_prefix[1:] == runfile_tree_path[:lsp-1]:
                             runfile_tree_path = runfile_tree_path[lsp-1:]
                         if strip_prefix == runfile_tree_path[0:lsp]:
