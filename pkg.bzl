@@ -38,7 +38,7 @@ def _pkg_tar_impl(ctx):
 
     # Compute the relative path
     data_path = compute_data_path(ctx.outputs.out, ctx.attr.strip_prefix)
-
+    print(data_path)
     # Find a list of path remappings to apply.
     remap_paths = dict(ctx.attr.remap_paths)
 
